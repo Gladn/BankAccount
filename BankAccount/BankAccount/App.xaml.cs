@@ -1,9 +1,12 @@
 ﻿using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.UI.ViewManagement;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using Windows.ApplicationModel.Core;
 
 namespace BankAccount
 {
@@ -30,6 +33,7 @@ namespace BankAccount
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
+
 
             // Не повторяйте инициализацию приложения, если в окне уже имеется содержимое,
             // только обеспечьте активность окна
@@ -61,6 +65,20 @@ namespace BankAccount
                 // Обеспечение активности текущего окна
                 Window.Current.Activate();
             }
+
+
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
+
+            ApplicationViewTitleBar tb = ApplicationView.GetForCurrentView().TitleBar;
+            
+            tb.BackgroundColor = Windows.UI.Colors.White;
+            tb.ButtonBackgroundColor = Windows.UI.Colors.White;
+            tb.ButtonForegroundColor = Windows.UI.Colors.Black;            
+            tb.ButtonHoverBackgroundColor = Windows.UI.Colors.Blue;
+            tb.ButtonHoverForegroundColor = Windows.UI.Colors.White;
+            tb.ButtonPressedBackgroundColor = Windows.UI.Colors.DarkBlue;
+            tb.ButtonPressedForegroundColor = Windows.UI.Colors.White;
+            tb.ForegroundColor = Windows.UI.Colors.Black;
         }
 
         /// <summary>
