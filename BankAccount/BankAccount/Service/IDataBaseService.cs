@@ -16,9 +16,14 @@ namespace BankAccount.Service
 
     public class DataBaseService : IDataBaseService
     {
+        private readonly ICurrencyApiService _currencyApiService;
 
         private string dbFileName = "BankAcc.db";
 
+        public DataBaseService(ICurrencyApiService currencyApiService)
+        {
+            _currencyApiService = currencyApiService;
+        }
 
         public async Task InitializeDatabaseAsync()
         {
