@@ -1,6 +1,7 @@
 ﻿using BankAccount.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Windows.Data.Json;
@@ -9,7 +10,7 @@ namespace BankAccount.Service
 {
     public interface ICurrencyApiService
     {
-        Task<List<Currency>> GetCurrencyRatesAsync();
+        Task<List<CurrencyRate>> GetCurrencyRatesAsync();
     }
 
     public class CurrencyApiService : ICurrencyApiService
@@ -21,7 +22,7 @@ namespace BankAccount.Service
             _httpClient = new HttpClient();
         }
 
-        public async Task<List<Currency>> GetCurrencyRatesAsync()
+        public async Task<List<CurrencyRate>> GetCurrencyRatesAsync()
         {
             try
             {
@@ -31,8 +32,24 @@ namespace BankAccount.Service
                 string responseBody = await response.Content.ReadAsStringAsync();
 
                 JsonObject rootObject = JsonObject.Parse(responseBody);
+                DateTime date = DateTime.Parse(rootObject.GetNamedString("Date"));
                 JsonObject valuteObject = rootObject["Valute"].GetObject();
-                List<Currency> currencies = new List<Currency>();
+
+                List<CurrencyRate> currencyRates = new List<CurrencyRate>();
+
+                // Создаем или получаем существующий CurrencyRate для текущей даты
+                CurrencyRate currentCurrencyRate = currencyRates.FirstOrDefault(rate => rate.Date == date);
+                
+                if (currentCurrencyRate == null)
+                {
+                    currentCurrencyRate = new CurrencyRate
+                    {
+                        Date = date,
+                        Currencies = new List<Currency>()
+                    };
+                    currencyRates.Add(currentCurrencyRate);
+                }
+
 
                 foreach (var valute in valuteObject)
                 {
@@ -41,19 +58,22 @@ namespace BankAccount.Service
                     Currency currency = new Currency
                     {
                         Id = currencyObject.GetNamedString("ID"),
+                        NumCode = currencyObject.GetNamedString("NumCode"),
                         CharCode = currencyObject.GetNamedString("CharCode"),
+                        Nominal = currencyObject.GetNamedNumber("Nominal"),
                         Name = currencyObject.GetNamedString("Name"),
-                        Value = (decimal)currencyObject.GetNamedNumber("Value")
+                        Value = currencyObject.GetNamedNumber("Value")
                     };
-                    currencies.Add(currency);
+
+                    currentCurrencyRate.Currencies.Add(currency);
                 }
 
-                return currencies;
+                return currencyRates;
             }
             catch (Exception ex)
             {
                 throw new Exception("Ошибка при отправке запроса к API: " + ex.Message, ex);
             }
-        }       
+        }
     }
 }

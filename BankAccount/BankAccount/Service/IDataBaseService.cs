@@ -37,8 +37,9 @@ namespace BankAccount.Service
             {
                 using (var connection = new SqliteConnection($"Data Source={dbPath}"))
                 {
-                    connection.Open();
-                    var createTransactionsTableCommand = connection.CreateCommand();
+                    await connection.OpenAsync();
+
+                    SqliteCommand createTransactionsTableCommand = connection.CreateCommand();
                     createTransactionsTableCommand.CommandText = @"
                         CREATE TABLE IF NOT EXISTS Transactions (
                             OperationID INTEGER PRIMARY KEY,
@@ -50,22 +51,35 @@ namespace BankAccount.Service
                     await createTransactionsTableCommand.ExecuteNonQueryAsync();
 
 
-                    var insertTransactionCommand = connection.CreateCommand();
+                    SqliteCommand insertTransactionCommand = connection.CreateCommand();
                     insertTransactionCommand.CommandText = @"
                         INSERT INTO Transactions (DateTime, Amount, Currency, Type)
                         VALUES ('2024-02-03', 100.00, 'USD', 'Deposit')";
                     await insertTransactionCommand.ExecuteNonQueryAsync();
 
 
-                    var createCurrenciesTableCommand = connection.CreateCommand();
-                    createCurrenciesTableCommand.CommandText = @"
+                    SqliteCommand createCurrencyDateTableCommand = connection.CreateCommand();
+                    createCurrencyDateTableCommand.CommandText = @"
+                        CREATE TABLE IF NOT EXISTS CurrencyDate (
+                            DateId INTEGER PRIMARY KEY,
+                            Date TEXT NOT NULL
+                        )";
+                    await createCurrencyDateTableCommand.ExecuteNonQueryAsync();
+
+
+                    SqliteCommand createCurrencyTableCommand = connection.CreateCommand();
+                    createCurrencyTableCommand.CommandText = @"
                         CREATE TABLE IF NOT EXISTS Currency (
                             Id TEXT PRIMARY KEY,
+                            DateId INTEGER NOT NULL,
+                            NumCode TEXT NOT NULL,
                             CharCode TEXT NOT NULL,
+                            Nominal NUMERIC NOT NULL,
                             Name TEXT NOT NULL,
-                            Value NUMERIC NOT NULL
+                            Value NUMERIC NOT NULL,
+                            FOREIGN KEY (DateId) REFERENCES CurrencyDate (DateId)
                         )";
-                    await createCurrenciesTableCommand.ExecuteNonQueryAsync();
+                    await createCurrencyTableCommand.ExecuteNonQueryAsync();
                 }
             }
         }
@@ -106,35 +120,78 @@ namespace BankAccount.Service
         {
             try
             {
-                List<Currency> currencies = await _currencyApiService.GetCurrencyRatesAsync();
+                List<CurrencyRate> currencyRates = await _currencyApiService.GetCurrencyRatesAsync();
 
                 using (var connection = new SqliteConnection($"Data Source={dbFileName}"))
                 {
                     await connection.OpenAsync();
-
                     var transaction = connection.BeginTransaction();
 
-                    foreach (var currency in currencies)
+                    try
                     {
-                        var insertCommand = connection.CreateCommand();
-                        insertCommand.CommandText = @"
-                            INSERT INTO Currency (Id, CharCode, Name, Value)
-                            VALUES ($id, $charCode, $name, $value)";
+                        foreach (var currencyRate in currencyRates)
+                        {
+                            bool dateExists;
 
-                        insertCommand.Parameters.AddWithValue("$id", currency.Id);
-                        insertCommand.Parameters.AddWithValue("$charCode", currency.CharCode);
-                        insertCommand.Parameters.AddWithValue("$name", currency.Name);
-                        insertCommand.Parameters.AddWithValue("$value", currency.Value);
+                            using (var checkDateCommand = connection.CreateCommand())
+                            {
+                                checkDateCommand.CommandText = "SELECT EXISTS (SELECT 1 FROM CurrencyDate WHERE Date = $date)";
+                                checkDateCommand.Parameters.AddWithValue("$date", currencyRate.Date.ToString("yyyy-MM-dd"));
+                                dateExists = Convert.ToBoolean(await checkDateCommand.ExecuteScalarAsync());
+                            }
 
-                        await insertCommand.ExecuteNonQueryAsync();
+
+                            if (dateExists)
+                            {
+                                transaction.Rollback();
+                                return;
+                            }
+
+                            var insertDateCommand = connection.CreateCommand();
+                            insertDateCommand.CommandText = @"
+                                INSERT INTO CurrencyDate (Date)
+                                VALUES ($date)";
+                            insertDateCommand.Parameters.AddWithValue("$date", currencyRate.Date.ToString("yyyy-MM-dd"));
+                            await insertDateCommand.ExecuteNonQueryAsync();
+
+
+                            int dateId;
+                            using (var getDateIdCommand = connection.CreateCommand())
+                            {
+                                getDateIdCommand.CommandText = "SELECT last_insert_rowid()";
+                                dateId = Convert.ToInt32(await getDateIdCommand.ExecuteScalarAsync());
+                            }
+
+
+                            foreach (var currency in currencyRate.Currencies)
+                            {
+                                var insertValueCommand = connection.CreateCommand();
+                                insertValueCommand.CommandText = @"
+                                    INSERT INTO Currency (DateId, Id, NumCode, CharCode, Nominal, Name, Value)
+                                    VALUES ($dateId, $id, $numCode, $charCode, $nominal, $name, $value)";
+                                insertValueCommand.Parameters.AddWithValue("$dateId", dateId);
+                                insertValueCommand.Parameters.AddWithValue("$id", currency.Id);
+                                insertValueCommand.Parameters.AddWithValue("$numCode", currency.NumCode);
+                                insertValueCommand.Parameters.AddWithValue("$charCode", currency.CharCode);
+                                insertValueCommand.Parameters.AddWithValue("$nominal", currency.Nominal);
+                                insertValueCommand.Parameters.AddWithValue("$name", currency.Name);
+                                insertValueCommand.Parameters.AddWithValue("$value", currency.Value);
+                                await insertValueCommand.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        transaction.Commit();
                     }
-
-                    transaction.Commit();
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw new Exception("Ошибка при обновлении этой валюты: " + ex.Message, ex);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("Ошибка при обновлении таблицы валют: " + ex.Message, ex);
+                throw new Exception("Ошибка при обновлении валюты: " + ex.Message, ex);
             }
         }
     }
