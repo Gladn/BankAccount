@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BankAccount.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +27,8 @@ namespace BankAccount.View
         public HistoryPage()
         {
             this.InitializeComponent();
+            var container = ((App)App.Current).Container;
+            DataContext = ActivatorUtilities.GetServiceOrCreateInstance(container, typeof(HistoryViewModel));
         }
     }
 }

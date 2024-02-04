@@ -1,8 +1,13 @@
-﻿using System;
+﻿using BankAccount.Model;
+using BankAccount.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.ServiceModel.Channels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -25,6 +30,8 @@ namespace BankAccount.View
         public MainBankAccountPage()
         {
             this.InitializeComponent();
+            var container = ((App)App.Current).Container;
+            DataContext = ActivatorUtilities.GetServiceOrCreateInstance(container, typeof(MainBankAccViewModel));            
         }
     }
 }

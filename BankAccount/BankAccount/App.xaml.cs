@@ -1,12 +1,14 @@
-﻿using System;
+﻿using BankAccount.Service;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.ComponentModel;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.UI.ViewManagement;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using Windows.ApplicationModel.Core;
 
 namespace BankAccount
 {
@@ -15,6 +17,8 @@ namespace BankAccount
     /// </summary>
     sealed partial class App : Application
     {
+        public IServiceProvider Container { get; }
+
         /// <summary>
         /// Инициализирует одноэлементный объект приложения. Это первая выполняемая строка разрабатываемого
         /// кода, поэтому она является логическим эквивалентом main() или WinMain().
@@ -23,6 +27,7 @@ namespace BankAccount
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            Container = ConfigureDependencyInjection();
         }
 
         /// <summary>
@@ -70,10 +75,10 @@ namespace BankAccount
             CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
 
             ApplicationViewTitleBar tb = ApplicationView.GetForCurrentView().TitleBar;
-            
+
             tb.BackgroundColor = Windows.UI.Colors.White;
             tb.ButtonBackgroundColor = Windows.UI.Colors.White;
-            tb.ButtonForegroundColor = Windows.UI.Colors.Black;            
+            tb.ButtonForegroundColor = Windows.UI.Colors.Black;
             tb.ButtonHoverBackgroundColor = Windows.UI.Colors.Blue;
             tb.ButtonHoverForegroundColor = Windows.UI.Colors.White;
             tb.ButtonPressedBackgroundColor = Windows.UI.Colors.DarkBlue;
@@ -103,6 +108,16 @@ namespace BankAccount
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Сохранить состояние приложения и остановить все фоновые операции
             deferral.Complete();
+        }
+
+
+        IServiceProvider ConfigureDependencyInjection()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddScoped<IDataBaseService, DataBaseService>();
+
+            return serviceCollection.BuildServiceProvider();
         }
     }
 }

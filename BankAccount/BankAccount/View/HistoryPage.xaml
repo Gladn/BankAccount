@@ -6,16 +6,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="White">
 
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        
         <!-- Заголовок -->
-        <Grid Grid.Row="0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="*"/>
@@ -25,14 +30,33 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
 
 
-            
+        <Grid Grid.Row="1" Grid.Column="0" Margin="10">
+            <Button VerticalAlignment="Top"  Command="{Binding NavigateBackToMainCommand}">
+                <Button.Content>
+                    <Image Source="/Assets/BackbuttonImage.png"  Width="45" Height="40" />
+                </Button.Content>
+            </Button>
         </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="1">
+            <ListView ItemsSource="{Binding Transactions}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding OperationID}" Foreground="Black" />
+                            <TextBlock Text="{Binding DateTime}" Foreground="Black"/>
+                            <TextBlock Text="{Binding Amount}" Foreground="Black"/>
+                            <TextBlock Text="{Binding Currency}" Foreground="Black"/>
+                            <TextBlock Text="{Binding Type}" Foreground="Black"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+      
+
+        
     </Grid>
 </Page>

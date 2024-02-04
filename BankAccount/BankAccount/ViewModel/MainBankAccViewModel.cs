@@ -11,28 +11,57 @@ using System.Windows.Input;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml;
 using Windows.UI.Popups;
+using BankAccount.Model;
 
 namespace BankAccount.ViewModel
 {
     public class MainBankAccViewModel : ViewModelBase
     {
+        private readonly IDataBaseService _dataBaseService;
 
-        public MainBankAccViewModel() 
+        private List<Transaction> _transactions;
+
+        public MainBankAccViewModel(IDataBaseService dataBaseService) 
         {
+            _dataBaseService = dataBaseService;
+
+            _ = DatabaseAsync();
+
+
             NavigateToAddTrancCommand = new RelayCommand(OnNavigateToAddTrancCommandExecuted, CanNavigateToAddTrancCommandExecute);
 
             NavigateToHistoryCommand = new RelayCommand(OnNavigateToHistoryCommandExecuted, CanNavigateToHistoryCommandExecute);
+
         }
+
+
+        public async Task DatabaseAsync()
+        {
+            try
+            {
+                await _dataBaseService.InitializeDatabaseAsync();
+
+            }
+            catch (Exception ex)
+            {
+                var dialog = new MessageDialog($"Ошибка создания БД. Код ошибки: {ex.Message}", "Уведомление");
+                await dialog.ShowAsync();
+            }
+        }
+
+
+        
 
 
         public ICommand NavigateToAddTrancCommand { get; }
         private bool CanNavigateToAddTrancCommandExecute(object parameter) => true;
-        private void OnNavigateToAddTrancCommandExecuted(object parameter)
+        private async Task OnNavigateToAddTrancCommandExecuted(object parameter)
         {
-            NavigateToAddTranc();
+            await NavigateToAddTranc();
         }
 
-        public void NavigateToAddTranc()
+        
+        public async Task NavigateToAddTranc()
         {
             try
             {
@@ -42,18 +71,20 @@ namespace BankAccount.ViewModel
             catch (Exception ex)
             {
                 var dialog = new MessageDialog($"Ошибка перехода. Код ошибки: {ex.Message}", "Уведомление");
-                dialog.ShowAsync();
+                await dialog.ShowAsync();
             }
         }
 
+
+
         public ICommand NavigateToHistoryCommand { get; }
         private bool CanNavigateToHistoryCommandExecute(object parameter) => true;
-        private void OnNavigateToHistoryCommandExecuted(object parameter)
+        private async Task OnNavigateToHistoryCommandExecuted(object parameter)
         {
-            NavigateToHistory();
+            await NavigateToHistory();
         }
 
-        public void NavigateToHistory()
+        public async Task NavigateToHistory()
         {
             try
             {
@@ -63,13 +94,8 @@ namespace BankAccount.ViewModel
             catch (Exception ex)
             {
                 var dialog = new MessageDialog($"Ошибка перехода. Код ошибки: {ex.Message}", "Уведомление");
-                dialog.ShowAsync();
+                await dialog.ShowAsync();
             }
         }
-
-
-
-
-
     }
 }
