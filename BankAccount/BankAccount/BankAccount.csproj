@@ -124,7 +124,6 @@
     <Compile Include="Model\Transaction.cs" />
     <Compile Include="Service\ICurrencyApiService.cs" />
     <Compile Include="Service\IDataBaseService.cs" />
-    <Compile Include="Service\INavigationService.cs" />
     <Compile Include="ViewModel\AddTransactionViewModel.cs" />
     <Compile Include="ViewModel\HistoryViewModel.cs" />
     <Compile Include="ViewModel\MainBankAccViewModel.cs" />

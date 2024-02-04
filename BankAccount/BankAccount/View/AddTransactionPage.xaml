@@ -6,11 +6,30 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="MintCream"
+    RequestedTheme="Light">
     
     
     <Page.Resources>
-        <Style TargetType="Button" x:Key="BankAccButtonStyle">
+        <Style TargetType="TextBox" x:Key="TextBoxStyle" >
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style TargetType="ComboBox" x:Key="CombBoxStyle" >
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+
+        <Style TargetType="Button" x:Key="ButtonStyle">
             <Setter Property="Background" Value="Blue"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -21,7 +40,7 @@
     </Page.Resources>
 
 
-    <Grid Background="White">
+    <Grid Background="MintCream" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -56,29 +75,39 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" 
-                   Text="Сумма операции:"                       
-                   Margin="10"
-                   Foreground="Black"/>
+                           Text="Сумма операции:"                       
+                           Margin="10"
+                           Foreground="Black"/>
 
-                <TextBlock Grid.Row="1" 
-                   Text="Цифры " 
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   Margin="10"/>
+
+                <TextBox Grid.Row="1" 
+                         FontWeight="Bold"
+                         Margin="20"
+                         Style="{StaticResource TextBoxStyle}"
+                         Text="{Binding TransactionAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
 
                 <TextBlock Grid.Row="2" 
                            Text="Тип операции:"                       
-                           Margin="10"/>
+                           Margin="10"
+                           Foreground="Black"/>
 
-                <TextBlock Grid.Row="3" 
-                           Text="Зачисления " 
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center"
-                           Margin="10"/>
+                
+                <ComboBox Grid.Row="3" 
+                          Text="Зачисления " 
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center"
+                          Margin="10"
+                          Style="{StaticResource CombBoxStyle}"
+                          ItemsSource="{Binding TransactionTypes}"
+                          SelectedItem="{Binding SelectedTransactionType}"
+                          SelectedIndex="0"/>
 
+                
                 <Button Grid.Row="4" 
                     Content="Записать" 
-                    Style="{StaticResource BankAccButtonStyle}"/>
+                    Style="{StaticResource ButtonStyle}"
+                    Command="{Binding AddTransactionCommand}"/>
             </Grid>
 
 
@@ -95,17 +124,23 @@
                        Text="Валюта:" 
                        Margin="10"/>
 
-                <TextBlock Grid.Row="1" 
+
+                <ComboBox Grid.Row="1" 
                        Text="Комбобокс валют" 
-                       FontWeight="Bold" 
-                       Margin="10"/>
+                       Margin="10"
+                       Style="{StaticResource CombBoxStyle}"
+                       ItemsSource="{Binding CurrencyNames}"
+                       SelectedItem="{Binding SelectedCurrencyName}"
+                       SelectedIndex="0"/>     
+
 
                 <Button Grid.Row="2" 
-                    Content="Отмена" 
-                    Style="{StaticResource BankAccButtonStyle}"
+                    Content="Отмена"                    
+                    Style="{StaticResource ButtonStyle}"
                     Background="White"
-                    Foreground="Black"/>
-
+                    Foreground="Black"
+                    BorderBrush="LightGray"
+                    Command="{Binding NavigateBackToMainCommand}"/>
             </Grid>
         </Grid>
     </Grid>
