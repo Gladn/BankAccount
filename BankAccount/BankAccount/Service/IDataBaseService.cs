@@ -4,6 +4,9 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using BankAccount.Model;
+using System.Xml.Linq;
+using Windows.UI.Xaml.Shapes;
+using Windows.Data.Json;
 
 namespace BankAccount.Service
 {
@@ -11,6 +14,7 @@ namespace BankAccount.Service
     {
         Task InitializeDatabaseAsync();
         Task<List<Transaction>> GetTransactionsAsync();
+        Task UpdateCurrencyTableAsync();
     }
 
 
@@ -34,23 +38,34 @@ namespace BankAccount.Service
                 using (var connection = new SqliteConnection($"Data Source={dbPath}"))
                 {
                     connection.Open();
-                    var createTableCommand = connection.CreateCommand();
-                    createTableCommand.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS Transactions (
-                        OperationID INTEGER PRIMARY KEY,
-                        DateTime TEXT NOT NULL,
-                        Amount NUMERIC NOT NULL,
-                        Currency TEXT NOT NULL,
-                        Type TEXT NOT NULL
-                    )";
-                    await createTableCommand.ExecuteNonQueryAsync();
+                    var createTransactionsTableCommand = connection.CreateCommand();
+                    createTransactionsTableCommand.CommandText = @"
+                        CREATE TABLE IF NOT EXISTS Transactions (
+                            OperationID INTEGER PRIMARY KEY,
+                            DateTime TEXT NOT NULL,
+                            Amount NUMERIC NOT NULL,
+                            Currency TEXT NOT NULL,
+                            Type TEXT NOT NULL
+                        )";
+                    await createTransactionsTableCommand.ExecuteNonQueryAsync();
 
-                    // Добавление одной строки в таблицу Transactions
-                    var insertCommand = connection.CreateCommand();
-                    insertCommand.CommandText = @"
+
+                    var insertTransactionCommand = connection.CreateCommand();
+                    insertTransactionCommand.CommandText = @"
                         INSERT INTO Transactions (DateTime, Amount, Currency, Type)
                         VALUES ('2024-02-03', 100.00, 'USD', 'Deposit')";
-                    await insertCommand.ExecuteNonQueryAsync();
+                    await insertTransactionCommand.ExecuteNonQueryAsync();
+
+
+                    var createCurrenciesTableCommand = connection.CreateCommand();
+                    createCurrenciesTableCommand.CommandText = @"
+                        CREATE TABLE IF NOT EXISTS Currency (
+                            Id TEXT PRIMARY KEY,
+                            CharCode TEXT NOT NULL,
+                            Name TEXT NOT NULL,
+                            Value NUMERIC NOT NULL
+                        )";
+                    await createCurrenciesTableCommand.ExecuteNonQueryAsync();
                 }
             }
         }
@@ -84,8 +99,43 @@ namespace BankAccount.Service
                     }
                 }
             }
-
             return transactions;
+        }
+
+        public async Task UpdateCurrencyTableAsync()
+        {
+            try
+            {
+                List<Currency> currencies = await _currencyApiService.GetCurrencyRatesAsync();
+
+                using (var connection = new SqliteConnection($"Data Source={dbFileName}"))
+                {
+                    await connection.OpenAsync();
+
+                    var transaction = connection.BeginTransaction();
+
+                    foreach (var currency in currencies)
+                    {
+                        var insertCommand = connection.CreateCommand();
+                        insertCommand.CommandText = @"
+                            INSERT INTO Currency (Id, CharCode, Name, Value)
+                            VALUES ($id, $charCode, $name, $value)";
+
+                        insertCommand.Parameters.AddWithValue("$id", currency.Id);
+                        insertCommand.Parameters.AddWithValue("$charCode", currency.CharCode);
+                        insertCommand.Parameters.AddWithValue("$name", currency.Name);
+                        insertCommand.Parameters.AddWithValue("$value", currency.Value);
+
+                        await insertCommand.ExecuteNonQueryAsync();
+                    }
+
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Ошибка при обновлении таблицы валют: " + ex.Message, ex);
+            }
         }
     }
 }

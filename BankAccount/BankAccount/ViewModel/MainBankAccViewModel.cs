@@ -41,6 +41,8 @@ namespace BankAccount.ViewModel
             {
                 await _dataBaseService.InitializeDatabaseAsync();
 
+                await _dataBaseService.UpdateCurrencyTableAsync();
+
             }
             catch (Exception ex)
             {
