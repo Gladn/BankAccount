@@ -1,5 +1,10 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Windows.UI.Popups;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml;
 
 namespace BankAccount.ViewModel
 {
@@ -17,6 +22,23 @@ namespace BankAccount.ViewModel
             field = value;
             OnPropertyChanged(PropertyName);
             return true;
+        }
+
+        public async Task NavigateBackAsync()
+        {
+            try
+            {
+                Frame rootFrame = Window.Current.Content as Frame;
+                if (rootFrame.CanGoBack)
+                {
+                    rootFrame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                var dialog = new MessageDialog($"Ошибка перехода назад. Код ошибки: {ex.Message}", "Уведомление");
+                await dialog.ShowAsync();
+            }
         }
     }
 }
