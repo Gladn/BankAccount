@@ -13,13 +13,13 @@ namespace BankAccount.ViewModel
 {
     public class HistoryViewModel : ViewModelBase
     {
-        private readonly IDataBaseService _dataBaseService;
+        private readonly IDataTransactionService _dataTransactionService;
 
         private List<Transaction> _transactions;
 
-        public HistoryViewModel(IDataBaseService dataBaseService)
+        public HistoryViewModel(IDataTransactionService dataTransactionService)
         {
-            _dataBaseService = dataBaseService;
+            _dataTransactionService = dataTransactionService;
 
             LoadTransactions();
 
@@ -29,16 +29,12 @@ namespace BankAccount.ViewModel
         public List<Transaction> Transactions
         {
             get { return _transactions; }
-            set
-            {
-                _transactions = value;
-                OnPropertyChanged(nameof(Transactions));
-            }
+            set { Set(ref _transactions, value); }
         }
 
         private async void LoadTransactions()
         {
-            Transactions = await _dataBaseService.GetTransactionsAsync();
+            Transactions = await _dataTransactionService.GetTransactionsAsync();
         }
 
 

@@ -5,44 +5,47 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml;
 using Windows.UI.Popups;
-using BankAccount.Model;
+
 
 namespace BankAccount.ViewModel
 {
     public class MainBankAccViewModel : ViewModelBase
     {
         private readonly IDataBaseService _dataBaseService;
+        private readonly IDataCurrencyService _dataCurrencyService;
 
-        private List<Transaction> _transactions;
-
-        public MainBankAccViewModel(IDataBaseService dataBaseService) 
+        public MainBankAccViewModel(IDataBaseService dataBaseService, IDataCurrencyService dataCurrencyService) 
         {
             _dataBaseService = dataBaseService;
 
-            _ = DatabaseAsync();
+            _dataCurrencyService = dataCurrencyService;
+
+            InitializeAsync();
 
 
             NavigateToAddTrancCommand = new RelayCommand(OnNavigateToAddTrancCommandExecuted, CanNavigateToAddTrancCommandExecute);
 
             NavigateToHistoryCommand = new RelayCommand(OnNavigateToHistoryCommandExecuted, CanNavigateToHistoryCommandExecute);
+        }
+
+        public async void InitializeAsync()
+        {
+            await CreateDatabaseAsync();
+            await UpadateCurrencyAsync();
+            await GetComboBoxCurrencyCharCode();
 
         }
 
-
-        public async Task DatabaseAsync()
+        public async Task CreateDatabaseAsync()
         {
             try
             {
                 await _dataBaseService.InitializeDatabaseAsync();
-
-                await _dataBaseService.UpdateCurrencyTableAsync();
-
             }
             catch (Exception ex)
             {
@@ -51,8 +54,45 @@ namespace BankAccount.ViewModel
             }
         }
 
+        public async Task UpadateCurrencyAsync()
+        {
+            try
+            {
+                await _dataBaseService.UpdateCurrencyTableFromApiAsync();
+            }
+            catch (Exception ex)
+            {
+                var dialog = new MessageDialog($"Ошибка в Api. Код ошибки: {ex.Message}", "Уведомление");
+                await dialog.ShowAsync();
+            }
+        }
 
-        
+
+        private ObservableCollection<string> _currencyCharCodes;
+        public ObservableCollection<string> CurrencyCharCodes
+        {
+            get { return _currencyCharCodes; }
+            set { Set(ref _currencyCharCodes, value); }
+        }
+
+        private string _selectedCurrencyCharCode;
+        public string SelectedCurrencyCharCode
+        {
+            get { return _selectedCurrencyCharCode; }
+            set { Set(ref _selectedCurrencyCharCode, value); }
+        }
+
+
+
+        private async Task GetComboBoxCurrencyCharCode()
+        {
+            List<string> currencyNamesFromDatabase = await _dataCurrencyService.GetCurrencyCharCodeAsync();
+
+            CurrencyCharCodes = new ObservableCollection<string>(currencyNamesFromDatabase);
+
+            SelectedCurrencyCharCode = CurrencyCharCodes.FirstOrDefault();
+        }
+
 
 
         public ICommand NavigateToAddTrancCommand { get; }
