@@ -1,8 +1,9 @@
 ﻿using BankAccount.Command;
-using BankAccount.Model;
+using BankAccount.DTOs;
 using BankAccount.Service;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.UI.Popups;
@@ -15,26 +16,35 @@ namespace BankAccount.ViewModel
     {
         private readonly IDataTransactionService _dataTransactionService;
 
-        private List<Transaction> _transactions;
+        private List<TransactionDTO> _transactions;
 
         public HistoryViewModel(IDataTransactionService dataTransactionService)
         {
             _dataTransactionService = dataTransactionService;
 
-            LoadTransactions();
+            _ = LoadTransactions();
 
             NavigateBackToMainCommand = new RelayCommand(OnNavigateBackToMainCommandExecuted, CanNavigateBackToMainCommandExecute);
         }
 
-        public List<Transaction> Transactions
+        public List<TransactionDTO> Transactions
         {
             get { return _transactions; }
             set { Set(ref _transactions, value); }
         }
 
-        private async void LoadTransactions()
+        private async Task LoadTransactions()
         {
-            Transactions = await _dataTransactionService.GetTransactionsAsync();
+            var transactions = await _dataTransactionService.GetTransactionsAsync();
+
+            Transactions = transactions.Select(t => new TransactionDTO
+            {
+                OperationId = t.OperationId,
+                DateTime = t.DateTime,
+                Amount = t.Amount,
+                Currency = t.Currency,
+                Type = t.Type
+            }).ToList();
         }
 
 
