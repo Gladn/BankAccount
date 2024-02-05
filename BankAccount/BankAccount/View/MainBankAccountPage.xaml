@@ -108,7 +108,7 @@
                           Margin="10"
                           Style="{StaticResource CombBoxStyle}"
                           ItemsSource="{Binding CurrencyCharCodes}"
-                          SelectedItem="{Binding SelectedCurrencyCharCode}"
+                          SelectedItem="{Binding SelectedCurrencyCharCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="0"/>  
 
 

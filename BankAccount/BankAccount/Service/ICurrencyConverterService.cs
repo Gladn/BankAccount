@@ -7,6 +7,8 @@ namespace BankAccount.Service
     public interface ICurrencyConverterService
     {
         Task<decimal> ConvertToRublesAsync(decimal amount, string currency);
+
+        Task<decimal> ConvertToOtherAsync(decimal amount, string currency);
     }
 
 
@@ -32,6 +34,23 @@ namespace BankAccount.Service
 
 
             decimal equivalentAmount = amount *  (decimal)(currencyData.Value / currencyData.Nominal);
+
+            return equivalentAmount;
+        }
+
+        public async Task<decimal> ConvertToOtherAsync(decimal amount, string currency)
+        {
+            DateTime lastDate = await _dataCurrencyService.GetLastCurrencyDateAsync();
+
+            Currency currencyData = await _dataCurrencyService.GetCurrencyDataAsync(currency, lastDate);
+
+            if (currencyData == null)
+            {
+                throw new Exception($"Данные о валюте '{currency}' на дату '{lastDate}' не найдены.");
+            }
+
+
+            decimal equivalentAmount = amount / (decimal)(currencyData.Value / currencyData.Nominal);
 
             return equivalentAmount;
         }

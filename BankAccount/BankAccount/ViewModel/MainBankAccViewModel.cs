@@ -20,14 +20,18 @@ namespace BankAccount.ViewModel
         private readonly IDataBaseService _dataBaseService;
         private readonly IDataCurrencyService _dataCurrencyService;
         private readonly IDataBalanceService _dataBalanceService;
+        private readonly ICurrencyConverterService _currencyConverterService;
 
-        public MainBankAccViewModel(IDataBaseService dataBaseService, IDataCurrencyService dataCurrencyService, IDataBalanceService dataBalanceService) 
+        public MainBankAccViewModel(IDataBaseService dataBaseService, IDataCurrencyService dataCurrencyService, 
+                                        IDataBalanceService dataBalanceService, ICurrencyConverterService currencyConverterService) 
         {
             _dataBaseService = dataBaseService;
 
             _dataCurrencyService = dataCurrencyService;
 
             _dataBalanceService = dataBalanceService;
+
+            _currencyConverterService = currencyConverterService;
 
             InitializeWindowAllData();
 
@@ -78,13 +82,27 @@ namespace BankAccount.ViewModel
             set { Set(ref _currencyCharCodes, value); }
         }
 
+        //private string _selectedCurrencyCharCode;
+        //public string SelectedCurrencyCharCode
+        //{
+        //    get { return _selectedCurrencyCharCode; }
+        //    set { Set(ref _selectedCurrencyCharCode, value); }
+        //}
+
         private string _selectedCurrencyCharCode;
         public string SelectedCurrencyCharCode
         {
             get { return _selectedCurrencyCharCode; }
-            set { Set(ref _selectedCurrencyCharCode, value); }
+            set
+            {
+                if (_selectedCurrencyCharCode != value)
+                {
+                    _selectedCurrencyCharCode = value;
+                    OnPropertyChanged(nameof(SelectedCurrencyCharCode)); 
+                    _ = UpdateDisplayedBalanceAsync();
+                }
+            }
         }
-
 
 
         private async Task GetComboBoxCurrencyCharCode()
@@ -93,7 +111,7 @@ namespace BankAccount.ViewModel
 
             CurrencyCharCodes = new ObservableCollection<string>(currencyNamesFromDatabase);
 
-            SelectedCurrencyCharCode = CurrencyCharCodes.FirstOrDefault();
+            SelectedCurrencyCharCode = "RUB";
         }
 
 
@@ -112,6 +130,15 @@ namespace BankAccount.ViewModel
             BalanceText = currentBalance.Amount.ToString();
         }
 
+
+        private async Task UpdateDisplayedBalanceAsync()
+        {
+            BalanceDTO currentBalance = await _dataBalanceService.GetCurrentBalanceDTOAsync();
+
+            decimal currentBalanceInRubles = await _currencyConverterService.ConvertToOtherAsync(currentBalance.Amount, SelectedCurrencyCharCode);
+
+            BalanceText = $"{currentBalanceInRubles:F2} {SelectedCurrencyCharCode}";
+        }
 
 
         public ICommand NavigateToAddTrancCommand { get; }

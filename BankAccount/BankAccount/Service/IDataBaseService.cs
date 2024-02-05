@@ -66,13 +66,14 @@ namespace BankAccount.Service
                     SqliteCommand createCurrencyTableCommand = connection.CreateCommand();
                     createCurrencyTableCommand.CommandText = @"
                         CREATE TABLE IF NOT EXISTS Currency (
-                            Id TEXT PRIMARY KEY,
+                            Id TEXT NOT NULL,
                             DateId INTEGER NOT NULL,
                             NumCode TEXT NOT NULL,
                             CharCode TEXT NOT NULL,
                             Nominal NUMERIC NOT NULL,
                             Name TEXT NOT NULL,
                             Value NUMERIC NOT NULL,
+                            PRIMARY KEY (DateId, Id),
                             FOREIGN KEY (DateId) REFERENCES CurrencyDate (DateId)
                         )";
                     await createCurrencyTableCommand.ExecuteNonQueryAsync();
