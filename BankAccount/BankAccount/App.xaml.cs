@@ -115,8 +115,12 @@ namespace BankAccount
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddScoped<IDataBaseService, DataBaseService>();
+            serviceCollection.AddSingleton<IDataBaseService, DataBaseService>();
             serviceCollection.AddScoped<ICurrencyApiService, CurrencyApiService>();
+            serviceCollection.AddScoped<ICurrencyConverterService, CurrencyConverterService>();
+            serviceCollection.AddScoped<IDataBalanceService, DataBalanceService>();
+            serviceCollection.AddScoped<IDataCurrencyService, DataCurrencyService>();
+            serviceCollection.AddScoped<IDataTransactionService, DataTransactionService>();
 
 
             return serviceCollection.BuildServiceProvider();

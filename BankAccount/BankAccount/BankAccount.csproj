@@ -120,10 +120,16 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Command\RelayCommand.cs" />
+    <Compile Include="DTOs\TransactionDTO.cs" />
+    <Compile Include="Model\Balance.cs" />
     <Compile Include="Model\Currency.cs" />
     <Compile Include="Model\Transaction.cs" />
+    <Compile Include="Service\IDataBalanceService.cs" />
+    <Compile Include="Service\ICurrencyConverterService.cs" />
     <Compile Include="Service\ICurrencyApiService.cs" />
     <Compile Include="Service\IDataBaseService.cs" />
+    <Compile Include="Service\IDataCurrencyService.cs" />
+    <Compile Include="Service\IDataTransactionService.cs" />
     <Compile Include="ViewModel\AddTransactionViewModel.cs" />
     <Compile Include="ViewModel\HistoryViewModel.cs" />
     <Compile Include="ViewModel\MainBankAccViewModel.cs" />
@@ -184,9 +190,7 @@
       <Version>6.2.14</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DTOs\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
