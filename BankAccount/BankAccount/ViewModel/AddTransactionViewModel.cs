@@ -85,8 +85,13 @@ namespace BankAccount.ViewModel
             };
 
             SelectedTransactionType = TransactionTypes.FirstOrDefault();
-
+            
             List<string> currencyNamesFromDatabase = await _dataCurrencyService.GetCurrencyCharCodeAsync();
+
+            if (!currencyNamesFromDatabase.Contains("RUB"))
+            {
+                currencyNamesFromDatabase.Insert(0, "RUB");
+            }
 
             CurrencyCharCodes = new ObservableCollection<string>(currencyNamesFromDatabase);
 
@@ -105,10 +110,13 @@ namespace BankAccount.ViewModel
                 decimal amount = decimal.Parse(TransactionAmount);
                 await _dataTransactionService.AddTransactionAsync(amount, SelectedCurrencyCharCode, SelectedTransactionType);
 
-
-                decimal amountInRubles = await _currencyConverterService.ConvertToRublesAsync(amount, SelectedCurrencyCharCode);
-                await _dataBalanceService.UpdateBalanceAsync(amountInRubles, SelectedTransactionType);
-
+                if (SelectedCurrencyCharCode != "RUB")
+                {
+                    decimal amountInRubles = await _currencyConverterService.ConvertToRublesAsync(amount, SelectedCurrencyCharCode);
+                    await _dataBalanceService.UpdateBalanceAsync(amountInRubles, SelectedTransactionType);
+                }
+                else await _dataBalanceService.UpdateBalanceAsync(amount, SelectedTransactionType);
+                
 
                 await NavigateBackAsync();
             }

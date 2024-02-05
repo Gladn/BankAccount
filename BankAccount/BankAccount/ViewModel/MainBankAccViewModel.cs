@@ -82,12 +82,6 @@ namespace BankAccount.ViewModel
             set { Set(ref _currencyCharCodes, value); }
         }
 
-        //private string _selectedCurrencyCharCode;
-        //public string SelectedCurrencyCharCode
-        //{
-        //    get { return _selectedCurrencyCharCode; }
-        //    set { Set(ref _selectedCurrencyCharCode, value); }
-        //}
 
         private string _selectedCurrencyCharCode;
         public string SelectedCurrencyCharCode
@@ -98,7 +92,8 @@ namespace BankAccount.ViewModel
                 if (_selectedCurrencyCharCode != value)
                 {
                     _selectedCurrencyCharCode = value;
-                    OnPropertyChanged(nameof(SelectedCurrencyCharCode)); 
+                    OnPropertyChanged(nameof(SelectedCurrencyCharCode));
+                    _ = UpadateCurrencyAsync();
                     _ = UpdateDisplayedBalanceAsync();
                 }
             }
@@ -109,9 +104,14 @@ namespace BankAccount.ViewModel
         {
             List<string> currencyNamesFromDatabase = await _dataCurrencyService.GetCurrencyCharCodeAsync();
 
+            if (!currencyNamesFromDatabase.Contains("RUB"))
+            {
+                currencyNamesFromDatabase.Insert(0, "RUB");
+            }
+
             CurrencyCharCodes = new ObservableCollection<string>(currencyNamesFromDatabase);
 
-            SelectedCurrencyCharCode = "RUB";
+            SelectedCurrencyCharCode = CurrencyCharCodes.FirstOrDefault();
         }
 
 
@@ -127,7 +127,7 @@ namespace BankAccount.ViewModel
         {
             BalanceDTO currentBalance = await _dataBalanceService.GetCurrentBalanceDTOAsync();
 
-            BalanceText = currentBalance.Amount.ToString();
+            BalanceText = currentBalance.Amount.ToString("0.00");
         }
 
 
@@ -135,9 +135,16 @@ namespace BankAccount.ViewModel
         {
             BalanceDTO currentBalance = await _dataBalanceService.GetCurrentBalanceDTOAsync();
 
-            decimal currentBalanceInRubles = await _currencyConverterService.ConvertToOtherAsync(currentBalance.Amount, SelectedCurrencyCharCode);
+            if (SelectedCurrencyCharCode == "RUB")
+            {
+                BalanceText = currentBalance.Amount.ToString("0.00");
+            }
+            else 
+            {
+                decimal currentBalanceInRubles = await _currencyConverterService.ConvertToOtherAsync(currentBalance.Amount, SelectedCurrencyCharCode);
 
-            BalanceText = $"{currentBalanceInRubles:F2} {SelectedCurrencyCharCode}";
+                BalanceText = currentBalanceInRubles.ToString("0.00");
+            }           
         }
 
 
