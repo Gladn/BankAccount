@@ -1,5 +1,4 @@
 ﻿using BankAccount.Command;
-using BankAccount.Model;
 using BankAccount.Service;
 using System;
 using System.Collections.Generic;
@@ -15,12 +14,24 @@ namespace BankAccount.ViewModel
 {
     public class AddTransactionViewModel : ViewModelBase
     {
-        private readonly IDataBaseService _dataBaseService;
-        public AddTransactionViewModel(IDataBaseService dataBaseService)
-        {
-            _dataBaseService = dataBaseService;
+        private readonly IDataCurrencyService _dataCurrencyService;
+        private readonly IDataTransactionService _dataTransactionService;
+        private readonly IDataBalanceService _dataBalanceService;
+        private readonly ICurrencyConverterService _currencyConverterService;
 
-            _ = GetAllComboBoxNames();
+        public AddTransactionViewModel(IDataCurrencyService dataCurrencyService, IDataTransactionService dataTransactionService,
+                                        IDataBalanceService dataBalanceService, ICurrencyConverterService currencyConverterService)
+        {
+            _dataCurrencyService = dataCurrencyService;
+
+            _dataTransactionService = dataTransactionService;
+
+            _dataBalanceService = dataBalanceService;
+
+            _currencyConverterService = currencyConverterService;
+
+
+            _ = GetAllBoxesData();
 
             AddTransactionCommand = new RelayCommand(OnAddTransactionCommandExecuted, CanAddTransactionCommandExecute);
 
@@ -40,18 +51,19 @@ namespace BankAccount.ViewModel
 
 
         
-        private ObservableCollection<string> _currencyNames;
-        public ObservableCollection<string> CurrencyNames
+        private ObservableCollection<string> _currencycharCodes;
+        public ObservableCollection<string> CurrencyCharCodes
         {
-            get { return _currencyNames; }
-            set { Set(ref _currencyNames, value); }
+            get { return _currencycharCodes; }
+            set { Set(ref _currencycharCodes, value); }
         }
 
-        private string _selectedCurrencyName;
-        public string SelectedCurrencyName
+
+        private string _selectedCurrencyCharCode;
+        public string SelectedCurrencyCharCode
         {
-            get { return _selectedCurrencyName; }
-            set { Set(ref _selectedCurrencyName, value); }
+            get { return _selectedCurrencyCharCode; }
+            set { Set(ref _selectedCurrencyCharCode, value); }
         }
 
 
@@ -64,7 +76,7 @@ namespace BankAccount.ViewModel
         }
 
 
-        private async Task GetAllComboBoxNames()
+        private async Task GetAllBoxesData()
         {
             TransactionAmount = "";
 
@@ -76,11 +88,11 @@ namespace BankAccount.ViewModel
 
             SelectedTransactionType = TransactionTypes.FirstOrDefault();
 
-            List<string> currencyNamesFromDatabase = await _dataBaseService.GetCurrencyNamesAsync();
+            List<string> currencyNamesFromDatabase = await _dataCurrencyService.GetCurrencyCharCodeAsync();
 
-            CurrencyNames = new ObservableCollection<string>(currencyNamesFromDatabase);
+            CurrencyCharCodes = new ObservableCollection<string>(currencyNamesFromDatabase);
 
-            SelectedCurrencyName = CurrencyNames.FirstOrDefault();
+            SelectedCurrencyCharCode = CurrencyCharCodes.FirstOrDefault();
         }
 
 
@@ -93,7 +105,13 @@ namespace BankAccount.ViewModel
             try
             {
                 decimal amount = decimal.Parse(TransactionAmount);
-                await _dataBaseService.AddTransactionAsync(amount, SelectedCurrencyName, SelectedTransactionType);
+                await _dataTransactionService.AddTransactionAsync(amount, SelectedCurrencyCharCode, SelectedTransactionType);
+                
+
+                decimal amountInRubles = await _currencyConverterService.ConvertToRublesAsync(amount, SelectedCurrencyCharCode);               
+                await _dataBalanceService.UpdateBalanceAsync(amountInRubles, SelectedTransactionType);
+
+
                 await NavigateBackToMain();
             }
             catch (Exception ex)

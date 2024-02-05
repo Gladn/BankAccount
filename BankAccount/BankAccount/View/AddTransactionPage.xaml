@@ -100,7 +100,7 @@
                           Margin="10"
                           Style="{StaticResource CombBoxStyle}"
                           ItemsSource="{Binding TransactionTypes}"
-                          SelectedItem="{Binding SelectedTransactionType}"
+                          SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           SelectedIndex="0"/>
 
                 
@@ -129,8 +129,8 @@
                        Text="Комбобокс валют" 
                        Margin="10"
                        Style="{StaticResource CombBoxStyle}"
-                       ItemsSource="{Binding CurrencyNames}"
-                       SelectedItem="{Binding SelectedCurrencyName}"
+                       ItemsSource="{Binding CurrencyCharCodes}"
+                       SelectedItem="{Binding SelectedCurrencyCharCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                        SelectedIndex="0"/>     
 
 
