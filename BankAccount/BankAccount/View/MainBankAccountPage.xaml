@@ -7,13 +7,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="Transparent"
+    Background="MintCream"
     RequestedTheme="Light"
     MinWidth="500"
-    MinHeight="300">
+    MinHeight="300"
+    CornerRadius="20">
 
 
     <Page.Resources>
+        <Style TargetType="ComboBox" x:Key="CombBoxStyle" >
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+
         <Style TargetType="Button" x:Key="BankAccButtonStyle">
             <Setter Property="Background" Value="Blue"/>
             <Setter Property="Foreground" Value="White"/>
@@ -24,8 +36,8 @@
         </Style>
     </Page.Resources>
 
-    
-    <Grid Background="White" >
+
+    <Grid Background="MintCream" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -55,6 +67,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -68,7 +81,7 @@
                        HorizontalAlignment="Center"
                        Margin="10"/>
 
-                <Button Grid.Row="2" 
+                <Button Grid.Row="3" 
                         Content="Записать" 
                         Style="{StaticResource BankAccButtonStyle}"
                         Command="{Binding NavigateToAddTrancCommand}"/>
@@ -81,6 +94,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -88,12 +102,16 @@
                            Text="Валюта:" 
                            Margin="10"/>
 
-                <TextBlock Grid.Row="1" 
-                           Text="Комбобокс валют" 
-                           FontWeight="Bold" 
-                           Margin="10"/>
+                <ComboBox Grid.Row="1" 
+                          Text="Комбобокс валют" 
+                          Margin="10"
+                          Style="{StaticResource CombBoxStyle}"
+                          ItemsSource="{Binding CurrencyCharCodes}"
+                          SelectedItem="{Binding SelectedCurrencyCharCode}"
+                          SelectedIndex="0"/>  
 
-                <Button Grid.Row="2" 
+
+                <Button Grid.Row="3" 
                         Content="История" 
                         Style="{StaticResource BankAccButtonStyle}"
                         Command="{Binding NavigateToHistoryCommand}"/>

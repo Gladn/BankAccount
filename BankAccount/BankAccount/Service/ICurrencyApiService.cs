@@ -37,7 +37,6 @@ namespace BankAccount.Service
 
                 List<CurrencyRate> currencyRates = new List<CurrencyRate>();
 
-                // Создаем или получаем существующий CurrencyRate для текущей даты
                 CurrencyRate currentCurrencyRate = currencyRates.FirstOrDefault(rate => rate.Date == date);
                 
                 if (currentCurrencyRate == null)
