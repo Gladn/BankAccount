@@ -120,6 +120,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Command\RelayCommand.cs" />
+    <Compile Include="DTOs\BalanceDTO.cs" />
     <Compile Include="DTOs\TransactionDTO.cs" />
     <Compile Include="Model\Balance.cs" />
     <Compile Include="Model\Currency.cs" />

@@ -1,4 +1,5 @@
-﻿using BankAccount.Model;
+﻿using BankAccount.DTOs;
+using BankAccount.Model;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Threading.Tasks;
@@ -8,7 +9,9 @@ namespace BankAccount.Service
     public interface IDataBalanceService
     {
         Task UpdateBalanceAsync(decimal amountInRubles, string transactionType);
-        Task<decimal> GetCurrentBalanceAsync();
+        Task<Balance> GetCurrentBalanceAsync();
+       
+        Task<BalanceDTO> GetCurrentBalanceDTOAsync(); //С этим еще подумать
     }
 
 
@@ -33,15 +36,15 @@ namespace BankAccount.Service
 
                 try
                 {
-                    decimal currentBalance = await GetCurrentBalanceAsync();
+                    Balance currentBalance = await GetCurrentBalanceAsync();
 
                     if (transactionType == "Зачисление")
                     {
-                        currentBalance += amountInRubles;
+                        currentBalance.Amount += amountInRubles;
                     }
                     else if (transactionType == "Снятие")
                     {
-                        currentBalance -= amountInRubles;
+                        currentBalance.Amount -= amountInRubles;
                     }
                     else
                     {
@@ -50,9 +53,9 @@ namespace BankAccount.Service
 
                     var updateBalanceCommand = connection.CreateCommand();
                     updateBalanceCommand.CommandText = @"
-                        UPDATE Balance
-                        SET Amount = $amount";
-                    updateBalanceCommand.Parameters.AddWithValue("$amount", currentBalance);
+                    UPDATE Balance
+                    SET Amount = $amount";
+                    updateBalanceCommand.Parameters.AddWithValue("$amount", currentBalance.Amount);
                     await updateBalanceCommand.ExecuteNonQueryAsync();
 
                     transaction.Commit();
@@ -66,7 +69,7 @@ namespace BankAccount.Service
         }
 
 
-        public async Task<decimal> GetCurrentBalanceAsync()
+        public async Task<Balance> GetCurrentBalanceAsync()
         {
             string dbPath = System.IO.Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, _dataBaseService.GetDbFileName());
 
@@ -74,21 +77,31 @@ namespace BankAccount.Service
             {
                 await connection.OpenAsync();
 
-                decimal currentBalance = 0;
+                Balance currentBalance = null;
 
                 SqliteCommand selectBalanceCommand = connection.CreateCommand();
-                selectBalanceCommand.CommandText = "SELECT Amount FROM Balance";
+                selectBalanceCommand.CommandText = "SELECT BalanceId, Amount FROM Balance";
 
                 using (var reader = await selectBalanceCommand.ExecuteReaderAsync())
                 {
                     if (await reader.ReadAsync())
                     {
-                        currentBalance = reader.GetDecimal(0);
+                        currentBalance = new Balance
+                        {
+                            BalanceId = reader.GetInt32(0),
+                            Amount = reader.GetDecimal(1)
+                        };
                     }
                 }
 
                 return currentBalance;
             }
+        }
+
+        public async Task<BalanceDTO> GetCurrentBalanceDTOAsync()
+        {
+            Balance currentBalance = await GetCurrentBalanceAsync();
+            return BalanceMapper.MapToDTO(currentBalance);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BankAccount.Command;
 using BankAccount.Service;
 using BankAccount.View;
+using BankAccount.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,14 +29,14 @@ namespace BankAccount.ViewModel
 
             _dataBalanceService = dataBalanceService;
 
-            InitializeWindow();
+            InitializeWindowAllData();
 
             NavigateToAddTrancCommand = new RelayCommand(OnNavigateToAddTrancCommandExecuted, CanNavigateToAddTrancCommandExecute);
 
             NavigateToHistoryCommand = new RelayCommand(OnNavigateToHistoryCommandExecuted, CanNavigateToHistoryCommandExecute);
         }
 
-        public async void InitializeWindow()
+        public async void InitializeWindowAllData()
         {
             await CreateDatabaseAsync();
             await UpadateCurrencyAsync();
@@ -106,9 +107,9 @@ namespace BankAccount.ViewModel
 
         private async Task GetTextBoxBalance()
         {
-            decimal currentBlance = await _dataBalanceService.GetCurrentBalanceAsync();
+            BalanceDTO currentBalance = await _dataBalanceService.GetCurrentBalanceDTOAsync();
 
-            BalanceText = currentBlance.ToString();
+            BalanceText = currentBalance.Amount.ToString();
         }
 
 
