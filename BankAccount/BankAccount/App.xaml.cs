@@ -76,8 +76,8 @@ namespace BankAccount
 
             ApplicationViewTitleBar tb = ApplicationView.GetForCurrentView().TitleBar;
 
-            tb.BackgroundColor = Windows.UI.Colors.White;
-            tb.ButtonBackgroundColor = Windows.UI.Colors.White;
+            tb.BackgroundColor = Windows.UI.Colors.LightGray;
+            tb.ButtonBackgroundColor = Windows.UI.Colors.LightGray;
             tb.ButtonForegroundColor = Windows.UI.Colors.Black;
             tb.ButtonHoverBackgroundColor = Windows.UI.Colors.Blue;
             tb.ButtonHoverForegroundColor = Windows.UI.Colors.White;
