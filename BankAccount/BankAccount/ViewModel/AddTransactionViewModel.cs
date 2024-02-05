@@ -20,7 +20,7 @@ namespace BankAccount.ViewModel
         private readonly ICurrencyConverterService _currencyConverterService;
 
         public AddTransactionViewModel(IDataCurrencyService dataCurrencyService, IDataTransactionService dataTransactionService,
-                                        IDataBalanceService dataBalanceService, ICurrencyConverterService currencyConverterService)
+                                            IDataBalanceService dataBalanceService, ICurrencyConverterService currencyConverterService)
         {
             _dataCurrencyService = dataCurrencyService;
 

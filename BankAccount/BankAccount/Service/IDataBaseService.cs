@@ -166,13 +166,13 @@ namespace BankAccount.Service
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        throw new Exception("Ошибка при обновлении этой валюты: " + ex.Message, ex);
+                        throw new Exception("Ошибка апи при обновлении последней валюты: " + ex.Message, ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("Ошибка при обновлении валюты: " + ex.Message, ex);
+                throw new Exception("Ошибка апи при обновлении валют: " + ex.Message, ex);
             }
         }
     }
