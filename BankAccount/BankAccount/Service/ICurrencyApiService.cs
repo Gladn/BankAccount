@@ -14,64 +14,74 @@ namespace BankAccount.Service
     }
 
     public class CurrencyApiService : ICurrencyApiService
-    {
+    {        
+        private readonly INetworkAvalableService _networkService;
         private readonly HttpClient _httpClient;
 
-        public CurrencyApiService()
-        {
+        public CurrencyApiService(INetworkAvalableService networkService)
+        {            
+            _networkService = networkService;
+
             _httpClient = new HttpClient();
         }
-
+        
         public async Task<List<CurrencyRate>> GetCurrencyRatesAsync()
         {
-            try
+            if (!_networkService.IsInternetAvailableAsync())
             {
-                HttpResponseMessage response = await _httpClient.GetAsync("https://www.cbr-xml-daily.ru/daily_json.js");
-                response.EnsureSuccessStatusCode();
-
-                string responseBody = await response.Content.ReadAsStringAsync();
-
-                JsonObject rootObject = JsonObject.Parse(responseBody);
-                DateTime date = DateTime.Parse(rootObject.GetNamedString("Date"));
-                JsonObject valuteObject = rootObject["Valute"].GetObject();
-
-                List<CurrencyRate> currencyRates = new List<CurrencyRate>();
-
-                CurrencyRate currentCurrencyRate = currencyRates.FirstOrDefault(rate => rate.Date == date);
-                
-                if (currentCurrencyRate == null)
-                {
-                    currentCurrencyRate = new CurrencyRate
-                    {
-                        Date = date,
-                        Currencies = new List<Currency>()
-                    };
-                    currencyRates.Add(currentCurrencyRate);
-                }
-
-
-                foreach (var valute in valuteObject)
-                {
-                    JsonObject currencyObject = valute.Value.GetObject();
-
-                    Currency currency = new Currency
-                    {
-                        Id = currencyObject.GetNamedString("ID"),
-                        NumCode = currencyObject.GetNamedString("NumCode"),
-                        CharCode = currencyObject.GetNamedString("CharCode"),
-                        Nominal = currencyObject.GetNamedNumber("Nominal"),
-                        Name = currencyObject.GetNamedString("Name"),
-                        Value = currencyObject.GetNamedNumber("Value")
-                    };
-
-                    currentCurrencyRate.Currencies.Add(currency);
-                }
-
-                return currencyRates;
+                throw new Exception("Нет подключения к интернету.");
             }
-            catch (Exception ex)
+            else
             {
-                throw new Exception("Ошибка при отправке запроса к API: " + ex.Message, ex);
+                try
+                {
+                    HttpResponseMessage response = await _httpClient.GetAsync("https://www.cbr-xml-daily.ru/daily_json.js");
+                    response.EnsureSuccessStatusCode();
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    JsonObject rootObject = JsonObject.Parse(responseBody);
+                    DateTime date = DateTime.Parse(rootObject.GetNamedString("Date"));
+                    JsonObject valuteObject = rootObject["Valute"].GetObject();
+
+                    List<CurrencyRate> currencyRates = new List<CurrencyRate>();
+
+                    CurrencyRate currentCurrencyRate = currencyRates.FirstOrDefault(rate => rate.Date == date);
+
+                    if (currentCurrencyRate == null)
+                    {
+                        currentCurrencyRate = new CurrencyRate
+                        {
+                            Date = date,
+                            Currencies = new List<Currency>()
+                        };
+                        currencyRates.Add(currentCurrencyRate);
+                    }
+
+
+                    foreach (var valute in valuteObject)
+                    {
+                        JsonObject currencyObject = valute.Value.GetObject();
+
+                        Currency currency = new Currency
+                        {
+                            Id = currencyObject.GetNamedString("ID"),
+                            NumCode = currencyObject.GetNamedString("NumCode"),
+                            CharCode = currencyObject.GetNamedString("CharCode"),
+                            Nominal = currencyObject.GetNamedNumber("Nominal"),
+                            Name = currencyObject.GetNamedString("Name"),
+                            Value = currencyObject.GetNamedNumber("Value")
+                        };
+
+                        currentCurrencyRate.Currencies.Add(currency);
+                    }
+
+                    return currencyRates;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Ошибка при отправке запроса к API: " + ex.Message, ex);
+                }
             }
         }
     }

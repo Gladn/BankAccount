@@ -122,6 +122,7 @@
     <Compile Include="Command\RelayCommand.cs" />
     <Compile Include="DTOs\BalanceDTO.cs" />
     <Compile Include="DTOs\TransactionDTO.cs" />
+    <Compile Include="Error\ErrorList.cs" />
     <Compile Include="Model\Balance.cs" />
     <Compile Include="Model\Currency.cs" />
     <Compile Include="Model\Transaction.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="Service\IDataBaseService.cs" />
     <Compile Include="Service\IDataCurrencyService.cs" />
     <Compile Include="Service\IDataTransactionService.cs" />
+    <Compile Include="Service\INetworkAvalableService.cs" />
     <Compile Include="ViewModel\AddTransactionViewModel.cs" />
     <Compile Include="ViewModel\HistoryViewModel.cs" />
     <Compile Include="ViewModel\MainBankAccViewModel.cs" />

@@ -11,6 +11,7 @@ namespace BankAccount.Service
         Task<List<string>> GetCurrencyCharCodeAsync();
         Task<DateTime> GetLastCurrencyDateAsync();
         Task<Currency> GetCurrencyDataAsync(string currency, DateTime date);
+        Task<bool> IsCurrencyDataAvailableAsync();
     }
 
 
@@ -105,6 +106,31 @@ namespace BankAccount.Service
                         return null;
                     }
                 }
+            }
+        }
+
+        public async Task<bool> IsCurrencyDataAvailableAsync()
+        {
+            try
+            {
+                string dbPath = System.IO.Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, _dataBaseService.GetDbFileName());
+                using (var connection = new SqliteConnection($"Data Source={dbPath}"))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "SELECT COUNT(*) FROM Currency";
+                        var result = await command.ExecuteScalarAsync();
+                        int count = Convert.ToInt32(result);
+
+                        return count > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Ошибка при проверке наличия данных о валюте в базе данных: " + ex.Message, ex);
             }
         }
     }

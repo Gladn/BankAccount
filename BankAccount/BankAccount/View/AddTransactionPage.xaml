@@ -84,7 +84,14 @@
                          FontWeight="Bold"
                          Margin="20"
                          Style="{StaticResource TextBoxStyle}"
-                         Text="{Binding TransactionAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                         Text="{Binding TransactionAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.Header>
+                        <TextBlock Foreground="Red" Visibility="{Binding HasErrors}">
+                            <Run Text="*"/>
+                            <Run Text="Неверный ввод. Только цифры и запятая"/>
+                        </TextBlock>
+                    </TextBox.Header>
+                </TextBox>
 
 
                 <TextBlock Grid.Row="2" 

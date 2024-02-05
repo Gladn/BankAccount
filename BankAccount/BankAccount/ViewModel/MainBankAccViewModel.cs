@@ -11,11 +11,16 @@ using System.Windows.Input;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml;
 using Windows.UI.Popups;
+using System.ComponentModel;
+using System.Text.RegularExpressions;
+using System.Collections;
+using System.Runtime.CompilerServices;
+using Windows.UI.Xaml.Data;
 
 
 namespace BankAccount.ViewModel
 {
-    public class MainBankAccViewModel : ViewModelBase
+    public class MainBankAccViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         private readonly IDataBaseService _dataBaseService;
         private readonly IDataCurrencyService _dataCurrencyService;
@@ -122,7 +127,7 @@ namespace BankAccount.ViewModel
             set { Set(ref _balanceText, value); }
         }
 
-
+               
         private async Task GetTextBoxBalance()
         {
             BalanceDTO currentBalance = await _dataBalanceService.GetCurrentBalanceDTOAsync();
@@ -146,7 +151,7 @@ namespace BankAccount.ViewModel
                 BalanceText = currentBalanceInRubles.ToString("0.00");
             }           
         }
-
+      
 
         public ICommand NavigateToAddTrancCommand { get; }
         private bool CanNavigateToAddTrancCommandExecute(object parameter) => true;
@@ -171,7 +176,6 @@ namespace BankAccount.ViewModel
         }
 
 
-
         public ICommand NavigateToHistoryCommand { get; }
         private bool CanNavigateToHistoryCommandExecute(object parameter) => true;
         private async Task OnNavigateToHistoryCommandExecuted(object parameter)
@@ -191,6 +195,111 @@ namespace BankAccount.ViewModel
                 var dialog = new MessageDialog($"Ошибка перехода. Код ошибки: {ex.Message}", "Уведомление");
                 await dialog.ShowAsync();
             }
+        }
+
+
+        #region Validation TextBlock
+
+        private readonly Dictionary<string, List<string>> _errors = new Dictionary<string, List<string>>();
+        private bool _hasErrors;
+
+        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
+        protected bool SetProperty<T>(ref T backingField, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(backingField, value))
+                return false;
+
+            backingField = value;
+            OnPropertyChanged(propertyName);
+            ValidateProperty(value, propertyName);
+            return true;
+        }
+
+        private void ValidateProperty(object value, string propertyName)
+        {
+            if (propertyName == nameof(BalanceText))
+            {
+                if (double.TryParse(BalanceText, out double balance) && balance < 0)
+                {
+                    AddError(propertyName, "Внимание: отрицательный счет");
+                }
+                else
+                {
+                    RemoveError(propertyName);
+                }
+            }
+
+            SetHasErrors();
+        }
+
+        private void SetHasErrors()
+        {
+            HasErrors = _errors.Values.Any(list => list != null && list.Count > 0);
+        }
+
+        private void AddError(string propertyName, string error)
+        {
+            if (!_errors.ContainsKey(propertyName))
+            {
+                _errors[propertyName] = new List<string>();
+            }
+
+            if (!_errors[propertyName].Contains(error))
+            {
+                _errors[propertyName].Add(error);
+                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+            }
+        }
+
+        private void RemoveError(string propertyName)
+        {
+            if (_errors.ContainsKey(propertyName))
+            {
+                _errors.Remove(propertyName);
+                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+            }
+        }
+
+        public IEnumerable GetErrors(string propertyName)
+        {
+            if (_errors.ContainsKey(propertyName))
+            {
+                return _errors[propertyName];
+            }
+
+            return Enumerable.Empty<string>();
+        }
+
+        public bool HasErrors
+        {
+            get { return _hasErrors; }
+            private set
+            {
+                if (_hasErrors != value)
+                {
+                    _hasErrors = value;
+                    OnPropertyChanged(nameof(HasErrors));
+                }
+            }
+        }
+
+        #endregion
+    }
+    public class ErrorListConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is IEnumerable<string> errors)
+            {
+                return string.Join(Environment.NewLine, errors);
+            }
+            return string.Empty;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
         }
     }
 }

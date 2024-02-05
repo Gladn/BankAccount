@@ -121,6 +121,7 @@ namespace BankAccount
             serviceCollection.AddScoped<IDataBalanceService, DataBalanceService>();
             serviceCollection.AddScoped<IDataCurrencyService, DataCurrencyService>();
             serviceCollection.AddScoped<IDataTransactionService, DataTransactionService>();
+            serviceCollection.AddScoped<INetworkAvalableService, NetworkAvalableService>();
 
 
             return serviceCollection.BuildServiceProvider();
