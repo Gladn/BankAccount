@@ -81,7 +81,7 @@ namespace BankAccount.Service
                     SqliteCommand createBalanceTableCommand = connection.CreateCommand();
                     createBalanceTableCommand.CommandText = @"
                         CREATE TABLE IF NOT EXISTS Balance (
-                            Id INTEGER PRIMARY KEY,
+                            BalanceId INTEGER PRIMARY KEY,
                             Amount NUMERIC NOT NULL
                         )";
                     await createBalanceTableCommand.ExecuteNonQueryAsync();
