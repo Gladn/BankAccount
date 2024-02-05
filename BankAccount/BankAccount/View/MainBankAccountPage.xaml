@@ -76,10 +76,11 @@
                        Margin="10"/>
 
                 <TextBlock Grid.Row="1" 
-                       Text="Цифры " 
                        FontWeight="Bold"
                        HorizontalAlignment="Center"
-                       Margin="10"/>
+                       Margin="10"
+                       FontSize="21"
+                       Text="{Binding BalanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <Button Grid.Row="3" 
                         Content="Записать" 

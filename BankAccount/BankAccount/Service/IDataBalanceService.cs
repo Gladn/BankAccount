@@ -8,7 +8,7 @@ namespace BankAccount.Service
     public interface IDataBalanceService
     {
         Task UpdateBalanceAsync(decimal amountInRubles, string transactionType);
-        Task<decimal> GetCurrentBalanceAsync(SqliteConnection connection);
+        Task<decimal> GetCurrentBalanceAsync();
     }
 
 
@@ -33,7 +33,7 @@ namespace BankAccount.Service
 
                 try
                 {
-                    decimal currentBalance = await GetCurrentBalanceAsync(connection);
+                    decimal currentBalance = await GetCurrentBalanceAsync();
 
                     if (transactionType == "Зачисление")
                     {
@@ -66,22 +66,29 @@ namespace BankAccount.Service
         }
 
 
-        public async Task<decimal> GetCurrentBalanceAsync(SqliteConnection connection)
+        public async Task<decimal> GetCurrentBalanceAsync()
         {
-            decimal currentBalance = 0;
+            string dbPath = System.IO.Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, _dataBaseService.GetDbFileName());
 
-            SqliteCommand selectBalanceCommand = connection.CreateCommand();
-            selectBalanceCommand.CommandText = "SELECT Amount FROM Balance";
-
-            using (var reader = await selectBalanceCommand.ExecuteReaderAsync())
+            using (var connection = new SqliteConnection($"Data Source={dbPath}"))
             {
-                if (await reader.ReadAsync())
-                {
-                    currentBalance = reader.GetDecimal(0);
-                }
-            }
+                await connection.OpenAsync();
 
-            return currentBalance;
+                decimal currentBalance = 0;
+
+                SqliteCommand selectBalanceCommand = connection.CreateCommand();
+                selectBalanceCommand.CommandText = "SELECT Amount FROM Balance";
+
+                using (var reader = await selectBalanceCommand.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        currentBalance = reader.GetDecimal(0);
+                    }
+                }
+
+                return currentBalance;
+            }
         }
     }
 }

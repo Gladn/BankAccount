@@ -18,27 +18,29 @@ namespace BankAccount.ViewModel
     {
         private readonly IDataBaseService _dataBaseService;
         private readonly IDataCurrencyService _dataCurrencyService;
+        private readonly IDataBalanceService _dataBalanceService;
 
-        public MainBankAccViewModel(IDataBaseService dataBaseService, IDataCurrencyService dataCurrencyService) 
+        public MainBankAccViewModel(IDataBaseService dataBaseService, IDataCurrencyService dataCurrencyService, IDataBalanceService dataBalanceService) 
         {
             _dataBaseService = dataBaseService;
 
             _dataCurrencyService = dataCurrencyService;
 
-            InitializeAsync();
+            _dataBalanceService = dataBalanceService;
 
+            InitializeWindow();
 
             NavigateToAddTrancCommand = new RelayCommand(OnNavigateToAddTrancCommandExecuted, CanNavigateToAddTrancCommandExecute);
 
             NavigateToHistoryCommand = new RelayCommand(OnNavigateToHistoryCommandExecuted, CanNavigateToHistoryCommandExecute);
         }
 
-        public async void InitializeAsync()
+        public async void InitializeWindow()
         {
             await CreateDatabaseAsync();
             await UpadateCurrencyAsync();
             await GetComboBoxCurrencyCharCode();
-
+            await GetTextBoxBalance();
         }
 
         public async Task CreateDatabaseAsync()
@@ -91,6 +93,22 @@ namespace BankAccount.ViewModel
             CurrencyCharCodes = new ObservableCollection<string>(currencyNamesFromDatabase);
 
             SelectedCurrencyCharCode = CurrencyCharCodes.FirstOrDefault();
+        }
+
+
+        private string _balanceText;
+        public string BalanceText
+        {
+            get { return _balanceText; }
+            set { Set(ref _balanceText, value); }
+        }
+
+
+        private async Task GetTextBoxBalance()
+        {
+            decimal currentBlance = await _dataBalanceService.GetCurrentBalanceAsync();
+
+            BalanceText = currentBlance.ToString();
         }
 
 
