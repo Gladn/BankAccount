@@ -12,8 +12,6 @@ namespace BankAccount.ViewModel
     {
         private readonly IDataTransactionService _dataTransactionService;
 
-        private List<TransactionDTO> _transactions;
-
         public HistoryViewModel(IDataTransactionService dataTransactionService)
         {
             _dataTransactionService = dataTransactionService;
@@ -23,6 +21,7 @@ namespace BankAccount.ViewModel
             NavigateBackToMainCommand = new RelayCommand(OnNavigateBackToMainCommandExecuted, CanNavigateBackToMainCommandExecute);
         }
 
+        private List<TransactionDTO> _transactions;
         public List<TransactionDTO> Transactions
         {
             get { return _transactions; }
@@ -36,13 +35,13 @@ namespace BankAccount.ViewModel
             Transactions = transactions.Select(t => new TransactionDTO
             {
                 OperationId = t.OperationId,
-                DateTime = t.DateTime,
+                DateTime = t.DateTime.ToString("dd-MM-yy"),
                 Amount = t.Amount,
                 Currency = t.Currency,
                 Type = t.Type
             }).ToList();
-        }
 
+        }
 
 
         public ICommand NavigateBackToMainCommand { get; }
