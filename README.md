@@ -1,4 +1,9 @@
 # BankAccount
+Entity Framework Core не работал в UWP, писал без ORM, получилось много сервисов.
+
+В стандартных элементах UWP Controls не было DataGrid. Установил Microsoft.Toolkit.Uwp.UI.Controls.DataGrid, показывает предупреждения, но работает. 
+
+
 
 MVVM:
 
