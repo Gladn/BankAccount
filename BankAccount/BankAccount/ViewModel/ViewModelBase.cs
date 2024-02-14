@@ -24,7 +24,7 @@ namespace BankAccount.ViewModel
             return true;
         }
 
-        public async Task NavigateBackAsync()
+        protected async Task NavigateBackAsync()
         {
             try
             {
