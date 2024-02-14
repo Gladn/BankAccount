@@ -23,8 +23,11 @@ namespace BankAccount.ViewModel
             OnPropertyChanged(PropertyName);
             return true;
         }
-
-        public async Task NavigateBackAsync()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected async Task NavigateBackAsync()
         {
             try
             {
